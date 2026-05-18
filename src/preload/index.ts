@@ -22,6 +22,7 @@ const soundbar = {
       ipcRenderer.invoke(SonosChannels.STREAM_TO_DEVICE, uuid, streamUrl),
     stopStream: (uuid: string) => ipcRenderer.invoke(SonosChannels.STOP_STREAM, uuid),
     testBeep: (uuid: string) => ipcRenderer.invoke(SonosChannels.TEST_BEEP, uuid),
+    addByIp: (ip: string) => ipcRenderer.invoke(SonosChannels.ADD_BY_IP, ip),
     onDevicesUpdated: (cb: (devices: unknown[]) => void) => {
       ipcRenderer.on(SonosChannels.DEVICES_UPDATED, (_, devices) => cb(devices))
       return () => ipcRenderer.removeAllListeners(SonosChannels.DEVICES_UPDATED)

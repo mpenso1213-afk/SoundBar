@@ -38,6 +38,7 @@ export function registerIpcHandlers(): void {
     sonosController.stopStream(uuid)
   )
   ipcMain.handle(SonosChannels.TEST_BEEP, (_, uuid: string) => testBeep(uuid))
+  ipcMain.handle(SonosChannels.ADD_BY_IP, (_, ip: string) => sonosManager.addByIp(ip))
 
   // Apple Music
   ipcMain.handle(MusicChannels.PLAY, () => appleMusicController.play())

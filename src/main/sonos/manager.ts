@@ -1,4 +1,4 @@
-import { SonosManager as SvrooijSonosManager } from '@svrooij/sonos'
+import { SonosManager as SvrooijSonosManager, SonosDevice as SvrooijSonosDevice } from '@svrooij/sonos'
 import { BrowserWindow } from 'electron'
 import { SonosChannels } from '../../shared/ipc-channels'
 import type { SonosDevice } from '../../shared/types'
@@ -26,6 +26,23 @@ class SonosManagerService {
 
   getManager(): SvrooijSonosManager | null {
     return this.manager
+  }
+
+  async addByIp(ip: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.manager) {
+        this.manager = new SvrooijSonosManager()
+      }
+      const device = new SvrooijSonosDevice(ip)
+      await device.LoadDeviceData()
+      // @ts-ignore — internal devices array
+      this.manager['devices'] = [...(this.manager['devices'] ?? []), device]
+      await this.pushDevicesToRenderer()
+      return { success: true }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      return { success: false, error: msg }
+    }
   }
 
   getDevice(uuid: string) {

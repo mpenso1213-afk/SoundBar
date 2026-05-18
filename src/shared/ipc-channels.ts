@@ -14,6 +14,7 @@ export const SonosChannels = {
   STREAM_TO_DEVICE: 'sonos:stream-to-device',
   STOP_STREAM: 'sonos:stop-stream',
   TEST_BEEP: 'sonos:test-beep',
+  ADD_BY_IP: 'sonos:add-by-ip',
 } as const
 
 export const MusicChannels = {
