@@ -14,6 +14,7 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
   const [volume, setVolume] = useState(device.volume)
   const [testing, setTesting] = useState(false)
   const [starting, setStarting] = useState(false)
+  const [playError, setPlayError] = useState<string | null>(null)
 
   const handleVolume = useCallback((v: number) => {
     setVolume(v)
@@ -23,6 +24,7 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
   const handlePlay = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (starting) return
+    setPlayError(null)
     let url = streamUrl
     if (!url) {
       setStarting(true)
@@ -33,8 +35,12 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
         pitchSemitones: 0,
         captureMusicApp: true,
       }) as PipelineStatus
-      url = status.streamUrl
       setStarting(false)
+      if (!status.active || !status.streamUrl) {
+        setPlayError(status.error ?? 'Failed to start stream.')
+        return
+      }
+      url = status.streamUrl
     }
     if (url) await window.soundbar.sonos.streamToDevice(device.uuid, url)
   }
@@ -121,6 +127,12 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
           >📡 Stream</button>
         )}
       </div>
+
+      {playError && (
+        <div style={{ marginTop: 8, fontSize: 11, color: '#f87171', lineHeight: 1.4 }}>
+          ⚠ {playError}
+        </div>
+      )}
     </div>
   )
 }
