@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Slider } from '../shared/Slider'
 import { StatusBadge } from '../shared/StatusBadge'
-import type { SonosDevice } from '../../../../shared/types'
+import type { SonosDevice, PipelineStatus } from '../../../../shared/types'
 
 interface Props {
   device: SonosDevice
@@ -13,14 +13,36 @@ interface Props {
 export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
   const [volume, setVolume] = useState(device.volume)
   const [testing, setTesting] = useState(false)
+  const [starting, setStarting] = useState(false)
 
   const handleVolume = useCallback((v: number) => {
     setVolume(v)
     window.soundbar.sonos.setVolume(device.uuid, v)
   }, [device.uuid])
 
-  const handlePlay = () => window.soundbar.sonos.play(device.uuid)
-  const handlePause = () => window.soundbar.sonos.pause(device.uuid)
+  const handlePlay = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (starting) return
+    let url = streamUrl
+    if (!url) {
+      setStarting(true)
+      const status = await window.soundbar.audio.startPipeline({
+        micDeviceIndex: 0,
+        micGain: 0,
+        musicGain: 1,
+        pitchSemitones: 0,
+        captureMusicApp: true,
+      }) as PipelineStatus
+      url = status.streamUrl
+      setStarting(false)
+    }
+    if (url) await window.soundbar.sonos.streamToDevice(device.uuid, url)
+  }
+
+  const handlePause = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.soundbar.sonos.pause(device.uuid)
+  }
 
   const handleTest = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -68,8 +90,15 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
       <div style={{ display: 'flex', gap: 6 }} onClick={(e) => e.stopPropagation()}>
         <button
           onClick={handlePlay}
-          style={{ flex: 1, padding: '6px 0', background: 'var(--bg-elevated)', borderRadius: 6, fontSize: 13 }}
-        >▶ Play</button>
+          disabled={starting}
+          style={{
+            flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 13,
+            background: starting ? 'var(--bg-elevated)' : '#16a34a',
+            color: starting ? 'var(--text-secondary)' : '#fff',
+            opacity: starting ? 0.7 : 1,
+            transition: 'all 0.2s',
+          }}
+        >{starting ? '⏳ Starting…' : '▶ Play'}</button>
         <button
           onClick={handlePause}
           style={{ flex: 1, padding: '6px 0', background: 'var(--bg-elevated)', borderRadius: 6, fontSize: 13 }}
