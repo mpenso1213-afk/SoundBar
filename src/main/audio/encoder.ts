@@ -5,13 +5,13 @@ export class AudioEncoder {
   private process: ChildProcess | null = null
   readonly outputStream = new PassThrough()
 
-  start(inputStream: Readable): void {
+  start(inputStream: Readable, inputChannels = 2): void {
     if (this.process) this.stop()
 
     this.process = spawn('ffmpeg', [
       '-f', 's16le',
       '-ar', '44100',
-      '-ac', '2',
+      '-ac', String(inputChannels),
       '-i', 'pipe:0',
       '-c:a', 'libmp3lame',
       '-b:a', '192k',

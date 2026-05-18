@@ -24,9 +24,17 @@ class AudioPipeline {
   async start(config: PipelineConfig): Promise<PipelineStatus> {
     if (this.active) await this.stop()
 
-    const musicOnly = config.captureMusicApp && config.micGain === 0
+    const wantMic = config.micGain > 0
+    const wantMusic = config.captureMusicApp
+    const micOnly = wantMic && !wantMusic
+    const musicOnly = !wantMic && wantMusic
 
-    if (musicOnly) {
+    if (micOnly) {
+      // Mic-only: bypass mixer + IPC, pipe capture directly to encoder (mono)
+      this.micCapture.start(config.micDeviceIndex)
+      this.encoder.start(this.micCapture.stream, 1)
+
+    } else if (musicOnly) {
       // Music-only: bypass mixer, pipe capture → encoder directly
       const result = this.musicCapture.start()
       if (!result.ok) {
@@ -34,7 +42,7 @@ class AudioPipeline {
       }
       this.encoder.start(this.musicCapture.stream)
 
-    } else {
+    } else if (wantMic && wantMusic) {
       // Full mix: mic + optional music through AudioMixerWrapper
       this.mixer = new AudioMixerWrapper()
       this.mixer.setMicGain(config.micGain)
