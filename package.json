@@ -8,7 +8,7 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "postinstall": "electron-rebuild -f -w naudiodon 2>/dev/null || true",
-    "push": "export $(cat .env | xargs) && git push origin main"
+    "push": "export $(cat .env | xargs) && git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/mpenso1213-afk/SoundBar.git && git push origin main"
   },
   "keywords": [],
   "author": "",
