@@ -69,6 +69,55 @@ export const appleMusicController = {
     }
   },
 
+  async getAirPlayDevices(): Promise<{ id: number; name: string; active: boolean }[]> {
+    try {
+      const result = await runAppleScript(`
+        tell application "Music"
+          set output to ""
+          set apDevices to AirPlay devices
+          repeat with d in apDevices
+            set isActive to (selected of d) as string
+            set output to output & (id of d as string) & "|" & (name of d) & "|" & isActive & "\n"
+          end repeat
+          return output
+        end tell
+      `)
+      if (!result || result.trim() === '') return []
+      return result
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => {
+          const parts = line.split('|')
+          return {
+            id: parseInt(parts[0] ?? '0', 10),
+            name: parts[1]?.trim() ?? '',
+            active: parts[2]?.trim() === 'true',
+          }
+        })
+    } catch {
+      return []
+    }
+  },
+
+  async setAirPlayToDevice(deviceName: string, active: boolean): Promise<{ ok: boolean; error?: string }> {
+    try {
+      await runAppleScript(`
+        tell application "Music"
+          set apDevices to AirPlay devices
+          repeat with d in apDevices
+            if (name of d) contains "${deviceName.replace(/"/g, '\\"')}" then
+              set selected of d to ${active}
+              return
+            end if
+          end repeat
+        end tell
+      `)
+      return { ok: true }
+    } catch (err) {
+      return { ok: false, error: String(err) }
+    }
+  },
+
   async getNowPlaying(): Promise<NowPlayingState | null> {
     try {
       const result = await runAppleScript(`

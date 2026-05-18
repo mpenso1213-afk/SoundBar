@@ -25,9 +25,25 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
     e.stopPropagation()
     if (starting) return
     setPlayError(null)
+    setStarting(true)
+
+    // Try AirPlay first — Music.app sees Sonos speakers as AirPlay devices
+    const devices = await window.soundbar.music.getAirPlayDevices() as { id: number; name: string; active: boolean }[]
+    const match = devices.find(
+      (d) => d.name.toLowerCase().includes(device.name.toLowerCase()) ||
+             device.name.toLowerCase().includes(d.name.toLowerCase())
+    )
+
+    if (match) {
+      const result = await window.soundbar.music.setAirPlayDevice(match.name, true) as { ok: boolean; error?: string }
+      setStarting(false)
+      if (!result.ok) setPlayError(result.error ?? 'AirPlay failed.')
+      return
+    }
+
+    // Fallback: HTTP stream pipeline (requires BlackHole or loopback device)
     let url = streamUrl
     if (!url) {
-      setStarting(true)
       const status = await window.soundbar.audio.startPipeline({
         micDeviceIndex: 0,
         micGain: 0,
@@ -37,10 +53,12 @@ export function DeviceCard({ device, selected, onSelect, streamUrl }: Props) {
       }) as PipelineStatus
       setStarting(false)
       if (!status.active || !status.streamUrl) {
-        setPlayError(status.error ?? 'Failed to start stream.')
+        setPlayError(status.error ?? 'No AirPlay match found and stream failed.')
         return
       }
       url = status.streamUrl
+    } else {
+      setStarting(false)
     }
     if (url) await window.soundbar.sonos.streamToDevice(device.uuid, url)
   }

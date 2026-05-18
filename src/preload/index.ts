@@ -40,6 +40,9 @@ const soundbar = {
       ipcRenderer.on(MusicChannels.NOW_PLAYING, (_, state) => cb(state))
       return () => ipcRenderer.removeAllListeners(MusicChannels.NOW_PLAYING)
     },
+    getAirPlayDevices: () => ipcRenderer.invoke(MusicChannels.GET_AIRPLAY_DEVICES),
+    setAirPlayDevice: (deviceName: string, active: boolean) =>
+      ipcRenderer.invoke(MusicChannels.SET_AIRPLAY_DEVICE, deviceName, active),
   },
   audio: {
     getDevices: () => ipcRenderer.invoke(AudioChannels.GET_DEVICES),

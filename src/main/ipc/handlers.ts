@@ -52,6 +52,10 @@ export function registerIpcHandlers(): void {
     appleMusicController.search(query)
   )
   ipcMain.handle(MusicChannels.GET_NOW_PLAYING, () => appleMusicController.getNowPlaying())
+  ipcMain.handle(MusicChannels.GET_AIRPLAY_DEVICES, () => appleMusicController.getAirPlayDevices())
+  ipcMain.handle(MusicChannels.SET_AIRPLAY_DEVICE, (_, deviceName: string, active: boolean) =>
+    appleMusicController.setAirPlayToDevice(deviceName, active)
+  )
 
   // Audio pipeline
   ipcMain.handle(AudioChannels.GET_DEVICES, () => getAudioDevices())

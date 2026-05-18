@@ -26,6 +26,8 @@ export const MusicChannels = {
   SEARCH: 'music:search',
   NOW_PLAYING: 'music:now-playing',
   GET_NOW_PLAYING: 'music:get-now-playing',
+  GET_AIRPLAY_DEVICES: 'music:get-airplay-devices',
+  SET_AIRPLAY_DEVICE: 'music:set-airplay-device',
 } as const
 
 export const AudioChannels = {
