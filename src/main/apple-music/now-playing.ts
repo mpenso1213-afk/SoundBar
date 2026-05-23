@@ -13,9 +13,10 @@ class NowPlayingPoller {
   start(): void {
     if (this.interval) return
     this.interval = setInterval(async () => {
-      if (!this.mainWindow) return
+      if (!this.mainWindow || this.mainWindow.isDestroyed()) return
       const state = await appleMusicController.getNowPlaying().catch(() => null)
-      this.mainWindow.webContents.send(MusicChannels.NOW_PLAYING, state)
+      if (!this.mainWindow.isDestroyed())
+        this.mainWindow.webContents.send(MusicChannels.NOW_PLAYING, state)
     }, 1500)
   }
 

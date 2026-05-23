@@ -54,7 +54,7 @@ class SonosManagerService {
   }
 
   private async pushDevicesToRenderer(): Promise<void> {
-    if (!this.manager || !this.mainWindow) return
+    if (!this.manager || !this.mainWindow || this.mainWindow.isDestroyed()) return
     let devices: SonosDevice[] = []
     try {
       const rawDevices = this.manager.Devices

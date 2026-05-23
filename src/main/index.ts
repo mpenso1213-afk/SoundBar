@@ -51,6 +51,11 @@ app.whenReady().then(async () => {
     nowPlayingPoller.start()
   })
 
+  win.on('closed', () => {
+    sonosManager.destroy()
+    nowPlayingPoller.stop()
+  })
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })

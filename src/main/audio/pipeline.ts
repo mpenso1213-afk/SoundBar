@@ -80,8 +80,10 @@ class AudioPipeline {
 
     const streamUrl = this.streamServer.getStreamUrl()
     const status: PipelineStatus = { active: true, streamUrl, error: null }
-    this.mainWindow?.webContents.send(AudioChannels.PIPELINE_STATUS, status)
-    this.mainWindow?.webContents.send(AudioChannels.STREAM_URL, streamUrl)
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.webContents.send(AudioChannels.PIPELINE_STATUS, status)
+      this.mainWindow.webContents.send(AudioChannels.STREAM_URL, streamUrl)
+    }
     return status
   }
 
@@ -109,7 +111,8 @@ class AudioPipeline {
     this.mixer = null
     this.active = false
     const status: PipelineStatus = { active: false, streamUrl: null, error: null }
-    this.mainWindow?.webContents.send(AudioChannels.PIPELINE_STATUS, status)
+    if (this.mainWindow && !this.mainWindow.isDestroyed())
+      this.mainWindow.webContents.send(AudioChannels.PIPELINE_STATUS, status)
   }
 }
 
